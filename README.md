@@ -24,13 +24,14 @@ store.set('data', {user: 'switer'}, 60); // store value with expire of 60 second
 
 ## API
 __instance options:__
+```javascript
 {
     local: {Boolean},  // use localstorage
     session: {Boolean} // use session storage
 }
-
+```
 __instance methods:__
-
+```
 get(key) getter
 
 set(key, value, expire) setter
@@ -38,3 +39,4 @@ set(key, value, expire) setter
 remove(key) remove the specify cache with the key
 
 removeExpired() remove all expired cache
+```
