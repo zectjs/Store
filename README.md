@@ -1,4 +1,4 @@
 Store
 =====
 
-Storage Module, the starge encapsulation of  localStorage/sessionStorage/Memory.
+Storage Module, the storage encapsulation of localStorage/sessionStorage/Memory, for the consistency interface.
