@@ -1,6 +1,8 @@
 var hasLocal,
     hasSession,
-    _storage = {};
+    _storage = {},
+    _storateCleanState = {},
+    toString = Object.prototype.toString;
 
 // storage detect
 hasLocal = ('localStorage' in window) && window.localStorage !== null;
@@ -10,7 +12,9 @@ hasSession = ('sessionStorage' in window) && window.sessionStorage !== null;
  *  Storage Constructor
  **/
 function LS() {};
+
 function Session() {};
+
 function Memory() {};
 
 /**
@@ -73,7 +77,10 @@ var Storage = function(options) {
     } else {
         this.storage = new Memory();
     }
-    // 初始化前，清空过期内容
+
+    this.namespace = options.namespace || '';
+    this.expire = options.expire;
+    // when init remove items whose out of date
     this.removeExpired();
 };
 
@@ -87,9 +94,8 @@ Storage.prototype = {
         } catch (e) {
             obj = value;
         }
-
-        if (obj && obj.data) {
-            if (!('expire' in obj) || obj.expire > Date.now()) {
+        if (obj) {
+            if (toString.call(obj) != '[object Object]'  || !('expire' in obj) || obj.expire > (new Date).getTime()) {
                 return obj.data;
             }
             this.remove(key);
@@ -97,11 +103,14 @@ Storage.prototype = {
         return null;
     },
     set: function(key, value, expire) {
+        key = this.namespace + (key || '');
+        expire = this.expire || expire;
+
         var obj = {
             data: value
         };
         if (expire > 0) {
-            obj.expire = Date.now() + expire * 1000;
+            obj.expire = (new Date).getTime() + expire * 1000;
         }
         this.storage.set(key, JSON.stringify(obj));
         return value;
@@ -110,16 +119,44 @@ Storage.prototype = {
      *  remove the specify cache with the key
      **/
     remove: function(key) {
+        key = this.namespace + (key || '');
+
         this.storage.remove(key);
     },
     /**
      *  remove all expired cache
      **/
-    removeExpired: function() {
-        var that = this;
-        this.storage.keys().forEach(function(key) {
-            that.get(key);
-        });
+    removeExpired: function () {
+        var that = this,
+            storageType = '';
+        if (this.storage instanceof LS) {
+            storageType = 'LS';
+        } else if (this.storage instanceof Session) {
+            storageType = 'Session';
+        } else if (this.storage instanceof Memory) {
+            storageType = 'Memory';
+        }
+        if (!storageType || _storateCleanState[storageType]) return;
+        _storateCleanState[storageType] = true;
+        /**
+         *  Async to clean for the performance
+         **/
+        setTimeout( function() {
+            this.storage.keys().forEach(function (key) {
+                var obj = that.storage.get(key);
+                try {
+                    obj = JSON.parse(obj);
+                } catch (e) {
+                    return;
+                }
+                if (obj) {
+                    if (toString.call(obj) == '[object Object]' && ('expire' in obj) && obj.expire <= (new Date).getTime()) {
+                        that.storage.remove(key);
+                    }
+                };
+            });
+            _storateCleanState[storageType] = false;
+        }.bind(this), 60*1000);
     }
 };
 
