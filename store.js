@@ -1,3 +1,5 @@
+'use strict';
+
 var hasLocal,
     hasSession,
     _storage = {},
@@ -43,7 +45,7 @@ Session.prototype = {
         sessionStorage.setItem(key, value);
     },
     remove: function(key) {
-        sessionStorage.removeItem(key, value);
+        sessionStorage.removeItem(key);
     },
     keys: function() {
         return Object.keys(sessionStorage);
@@ -77,10 +79,9 @@ var Storage = function(options) {
     } else {
         this.storage = new Memory();
     }
-
     this.namespace = options.namespace || '';
     this.expire = options.expire;
-    // when init remove items whose out of date
+    // Remove those expired items when instance
     this.removeExpired();
 };
 
@@ -113,14 +114,12 @@ Storage.prototype = {
             obj.expire = (new Date).getTime() + expire * 1000;
         }
         this.storage.set(key, JSON.stringify(obj));
-        return value;
     },
     /**
      *  remove the specify cache with the key
      **/
     remove: function(key) {
         key = this.namespace + (key || '');
-
         this.storage.remove(key);
     },
     /**
