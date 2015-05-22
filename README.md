@@ -28,6 +28,7 @@ __instance options:__
 {
     local: {Boolean},  // use localstorage
     session: {Boolean} // use session storage
+    namespace: {String}// use namespace 
 }
 ```
 __instance methods:__
