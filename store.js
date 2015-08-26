@@ -79,7 +79,7 @@ var Storage = function(options) {
     } else {
         this.storage = new Memory();
     }
-    this.namespace = options.namespace || '';
+    this.namespace = options.namespace ? options.namespace + '_' : '';
     this.expire = options.expire;
     // Remove those expired items when instance
     this.removeExpired();
@@ -87,6 +87,7 @@ var Storage = function(options) {
 
 Storage.prototype = {
     get: function(key) {
+        key = this.namespace + (key || '');
         var value = this.storage.get(key),
             obj;
 
