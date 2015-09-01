@@ -30,7 +30,7 @@ LS.prototype = {
         localStorage.setItem(key, value);
     },
     remove: function(key) {
-        localStorage.removeItem(key, value);
+        localStorage.removeItem(key);
     },
     keys: function() {
         return Object.keys(localStorage);
