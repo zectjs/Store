@@ -13,11 +13,11 @@ hasSession = ('sessionStorage' in window) && window.sessionStorage !== null;
 /**
  *  Storage Constructor
  **/
-function LS() {};
+function LS() {}
 
-function Session() {};
+function Session() {}
 
-function Memory() {};
+function Memory() {}
 
 /**
  *  Consistency interface implementation
@@ -30,7 +30,7 @@ LS.prototype = {
         localStorage.setItem(key, value);
     },
     remove: function(key) {
-        localStorage.removeItem(key, value);
+        localStorage.removeItem(key);
     },
     keys: function() {
         return Object.keys(localStorage);
@@ -97,7 +97,7 @@ Storage.prototype = {
             obj = value;
         }
         if (obj) {
-            if (toString.call(obj) != '[object Object]'  || !('expire' in obj) || obj.expire > (new Date).getTime()) {
+            if (toString.call(obj) != '[object Object]'  || !('expire' in obj) || obj.expire > (new Date()).getTime()) {
                 return obj.data;
             }
             this.remove(key);
@@ -112,7 +112,7 @@ Storage.prototype = {
             data: value
         };
         if (expire > 0) {
-            obj.expire = (new Date).getTime() + expire * 1000;
+            obj.expire = (new Date()).getTime() + expire * 1000;
         }
         this.storage.set(key, JSON.stringify(obj));
     },
@@ -150,10 +150,10 @@ Storage.prototype = {
                     return;
                 }
                 if (obj) {
-                    if (toString.call(obj) == '[object Object]' && ('expire' in obj) && obj.expire <= (new Date).getTime()) {
+                    if (toString.call(obj) == '[object Object]' && ('expire' in obj) && obj.expire <= (new Date()).getTime()) {
                         that.storage.remove(key);
                     }
-                };
+                }
             });
             _storateCleanState[storageType] = false;
         }.bind(this), 60*1000);
