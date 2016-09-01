@@ -1,0 +1,19 @@
+{
+  "name": "store-ex",
+  "version": "1.0.0",
+  "description": "LS, Session, Memory",
+  "main": "store.js",
+  "scripts": {
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zectjs/Store.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zectjs/Store/issues"
+  },
+  "homepage": "https://github.com/zectjs/Store#readme"
+}

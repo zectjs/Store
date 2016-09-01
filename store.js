@@ -1,15 +1,25 @@
 'use strict';
 
+var fns = require('./util')
+
 var hasLocal,
     hasSession,
     _storage = {},
-    _storateCleanState = {},
-    toString = Object.prototype.toString;
+    _storateCleanState = {}
 
 // storage detect
 hasLocal = ('localStorage' in window) && window.localStorage !== null;
 hasSession = ('sessionStorage' in window) && window.sessionStorage !== null;
-
+try {
+    hasLocal && window.localStorage.setItem('_store_detection_test_', 'hasLocal')
+} catch (e) {
+    hasLocal = false
+}
+try {
+    hasSession && window.sessionStorage.setItem('_store_detection_test_', 'hasLocal')
+} catch (e) {
+    hasSession = false
+}
 /**
  *  Storage Constructor
  **/
@@ -74,7 +84,7 @@ var Storage = function(options) {
     options = options || {};
     if (options.local && hasLocal) {
         this.storage = new LS();
-    } else if ((options.local && hasLocal) || (options.session && hasSession)) {
+    } else if ((options.local && !hasLocal) || (options.session && hasSession)) {
         this.storage = new Session();
     } else {
         this.storage = new Memory();
@@ -97,7 +107,7 @@ Storage.prototype = {
             obj = value;
         }
         if (obj) {
-            if (toString.call(obj) != '[object Object]'  || !('expire' in obj) || obj.expire > (new Date()).getTime()) {
+            if (fns.type(obj) != 'object'  || !('expire' in obj) || obj.expire > (new Date()).getTime()) {
                 return obj.data;
             }
             this.remove(key);
@@ -114,7 +124,13 @@ Storage.prototype = {
         if (expire > 0) {
             obj.expire = (new Date()).getTime() + expire * 1000;
         }
-        this.storage.set(key, JSON.stringify(obj));
+
+        try {
+            var v = window.JSON && JSON.stringify ? JSON.stringify(obj) : obj;
+            this.storage.set(key, v);
+        } catch(e) {
+
+        }
     },
     /**
      *  remove the specify cache with the key
@@ -141,22 +157,26 @@ Storage.prototype = {
         /**
          *  Async to clean for the performance
          **/
-        setTimeout( function() {
-            this.storage.keys().forEach(function (key) {
-                var obj = that.storage.get(key);
-                try {
-                    obj = JSON.parse(obj);
-                } catch (e) {
-                    return;
-                }
-                if (obj) {
-                    if (toString.call(obj) == '[object Object]' && ('expire' in obj) && obj.expire <= (new Date()).getTime()) {
-                        that.storage.remove(key);
+        setTimeout(function() {
+            try {
+                fns.forEach(that.storage.keys(), function (key) {
+                    var obj = that.storage.get(key);
+                    try {
+                        obj = JSON.parse(obj);
+                    } catch (e) {
+                        return
                     }
-                }
-            });
-            _storateCleanState[storageType] = false;
-        }.bind(this), 60*1000);
+                    if (obj) {
+                        if (fns.type(obj) == 'object' && ('expire' in obj) && obj.expire <= (new Date()).getTime()) {
+                            that.storage.remove(key);
+                        }
+                    }
+                });
+                _storateCleanState[storageType] = false;
+            } catch(e) {
+                console.log('[Store] removeExpired error:', e)
+            }
+        }, 60*1000);
     }
 };
 
